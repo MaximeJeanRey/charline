@@ -46,8 +46,7 @@ Tout se règle dans [`src/config.ts`](src/config.ts) :
 export const CONFIG = {
   DATE_DEBUT: "2024-01-01",       // jour zéro de l'arbre
   TOTAL_ETAPES: 52,               // une image par semaine
-  PHRASE_POETIQUE: "...",         // la phrase affichée discrètement
-  AFFICHER_AGE: true,             // afficher l'âge en jours
+  AFFICHER_AGE: true,             // afficher le message d'ambiance (jour + prochaine pousse)
 };
 ```
 

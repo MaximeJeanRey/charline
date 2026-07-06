@@ -32,6 +32,16 @@ export function etapeContinue(jours: number, totalEtapes: number): number {
   return Math.min(totalEtapes, jours / 7);
 }
 
+/**
+ * Nombre de jours avant la prochaine pousse (le prochain palier hebdomadaire
+ * de croissance). Renvoie `null` quand l'arbre a atteint son dernier stade :
+ * il n'y a alors plus de pousse à venir.
+ */
+export function joursAvantProchainePousse(jours: number, totalEtapes: number): number | null {
+  if (etapeActuelle(jours, totalEtapes) >= totalEtapes) return null;
+  return 7 - (jours % 7);
+}
+
 /** Saison météorologique (hémisphère nord) pour une date donnée. */
 export function saisonActuelle(date: Date): Saison {
   const mois = date.getMonth(); // 0 = janvier

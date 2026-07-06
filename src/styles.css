@@ -213,16 +213,16 @@ body {
   opacity: 1;
 }
 
-#phrase-poetique {
+#jour-actuel {
   margin: 0;
   font-family: "Caveat", "Cormorant Garamond", cursive;
-  font-size: clamp(1.05rem, 3.4vw, 1.5rem);
+  font-size: clamp(1.2rem, 4vw, 1.7rem);
   color: var(--brun);
   letter-spacing: 0.02em;
   text-shadow: 0 1px 6px rgba(242, 236, 221, 0.6);
 }
 
-#age-jours {
+#prochaine-pousse {
   margin: 0;
   font-size: clamp(0.62rem, 2vw, 0.78rem);
   letter-spacing: 0.14em;

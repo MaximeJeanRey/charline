@@ -24,9 +24,6 @@ export const CONFIG = {
   /** Dossier contenant winter.jpg, spring.jpg, summer.jpg, autumn.jpg (dans /public). */
   DOSSIER_FONDS: "assets/backgrounds",
 
-  /** Phrase poétique affichée discrètement en bas de l'écran. */
-  PHRASE_POETIQUE: "Chaque jour, une racine de plus vers ce que nous devenons.",
-
-  /** Afficher ou non l'âge de l'arbre en jours. */
+  /** Afficher ou non le message d'ambiance (jour actuel + prochaine pousse). */
   AFFICHER_AGE: true,
 } as const;

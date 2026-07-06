@@ -1,0 +1,262 @@
+/* ==========================================================================
+   L'arbre — une expérience contemplative
+   Direction artistique : aquarelle, carnet de voyage, livre illustré.
+   ========================================================================== */
+
+:root {
+  --ocre: #c9a25c;
+  --brun: #5b4636;
+  --brun-doux: #7a6552;
+  --vert: #6f8c5f;
+  --vert-profond: #47603c;
+  --papier: #f2ecdd;
+  --papier-sombre: #e7ded0;
+  --encre: #3d3226;
+
+  --duree-lente: 3.2s;
+  --duree-tres-lente: 8s;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--papier);
+  color: var(--encre);
+  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  position: fixed;
+  inset: 0;
+}
+
+/* ---------- Scène plein écran ---------- */
+
+#scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  cursor: default;
+}
+
+.bg-layer {
+  position: absolute;
+  inset: -2%;
+  width: 104%;
+  height: 104%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity var(--duree-tres-lente) ease-in-out;
+  filter: saturate(0.85) brightness(1.02);
+}
+
+/* Fonds de secours en dégradé, utilisés tant qu'aucune image de saison
+   n'a été déposée dans /public/assets/backgrounds/ */
+.bg-layer.fallback-winter { background: radial-gradient(120% 90% at 50% 0%, #eef2ef 0%, #d8e0da 35%, #b9c4bb 70%, #98a89c 100%); }
+.bg-layer.fallback-spring { background: radial-gradient(120% 90% at 50% 10%, #fdf3e7 0%, #f0e0c9 30%, #d9e3b8 65%, #b9cf94 100%); }
+.bg-layer.fallback-summer { background: radial-gradient(120% 90% at 50% 5%, #fff6da 0%, #f3dfa0 25%, #cfe0a0 55%, #8fae66 100%); }
+.bg-layer.fallback-autumn { background: radial-gradient(120% 90% at 50% 10%, #fbe8c8 0%, #edc487 30%, #cf9a52 60%, #9c6a34 100%); }
+
+/* Mode aperçu accéléré (?apercu) : transitions raccourcies pour rester
+   lisibles sur une saison qui ne dure qu'une dizaine de secondes. */
+.apercu-accelere .bg-layer {
+  transition-duration: 1.4s;
+}
+.apercu-accelere #tree-wrap {
+  transition-duration: 0.5s;
+}
+#apercu-etiquette {
+  position: absolute;
+  top: 1.4vh;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brun-doux);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* Grain de papier, très léger, superposé à tout */
+#paper-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+#vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  box-shadow: inset 0 0 min(18vw, 18vh) rgba(61, 50, 38, 0.35);
+}
+
+#weather-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ---------- L'arbre ---------- */
+
+#tree-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 4vh;
+  opacity: 0;
+  transform: translateY(1.2vh) scale(0.985);
+  transition: opacity 2.6s ease-out, transform 2.6s ease-out;
+}
+
+#tree-wrap.entree {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Illustrations aquarelle (imgs/N.png). Deux calques superposés pour le
+   fondu enchaîné entre stades de croissance. */
+#tree-photo {
+  position: relative;
+  width: 92vw;
+  height: 88vh;
+  animation: respire 9s ease-in-out infinite;
+}
+
+/* Illustration détourée (fond blanc retiré) : elle repose directement sur
+   la scène, la saison passe entre les feuilles. Une ombre portée douce
+   l'ancre dans le décor sans la détacher. */
+.tree-photo-layer {
+  position: absolute;
+  inset: 0;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0;
+  transition: opacity 2.4s ease-in-out;
+  filter: drop-shadow(0 1vh 1.2vh rgba(61, 50, 38, 0.22));
+}
+
+#tree-fallback {
+  display: none;
+  width: 92vw;
+  height: 86vh;
+  filter: drop-shadow(0 1.4vh 1.6vh rgba(61, 50, 38, 0.28));
+  animation: respire 9s ease-in-out infinite;
+}
+
+#tree-fallback.actif {
+  display: block;
+}
+
+/* Taille DÉFINIE (pas auto) : un SVG qui n'a qu'un viewBox se réduit à
+   0×0 dans un conteneur flex si on le laisse en width/height auto. On lui
+   donne donc la taille de la boîte, et preserveAspectRatio (xMidYMid meet
+   par défaut) centre l'arbre à l'intérieur en préservant ses proportions. */
+#tree-fallback svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes respire {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-0.4vh) rotate(0.15deg); }
+}
+
+/* ---------- Message d'ambiance ---------- */
+
+#ambiance {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2.6vh;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+  text-align: center;
+  padding: 0 6vw;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 3s ease-in 1.4s;
+}
+
+#ambiance.visible {
+  opacity: 1;
+}
+
+#phrase-poetique {
+  margin: 0;
+  font-family: "Caveat", "Cormorant Garamond", cursive;
+  font-size: clamp(1.05rem, 3.4vw, 1.5rem);
+  color: var(--brun);
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 6px rgba(242, 236, 221, 0.6);
+}
+
+#age-jours {
+  margin: 0;
+  font-size: clamp(0.62rem, 2vw, 0.78rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brun-doux);
+  opacity: 0.62;
+}
+
+/* ---------- Petites tailles / mobile ---------- */
+
+@media (max-width: 480px) {
+  #tree-img, #tree-fallback {
+    max-height: 80vh;
+  }
+  #ambiance {
+    bottom: 3.2vh;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 480px) {
+  #tree-img, #tree-fallback {
+    max-height: 72vh;
+  }
+  #ambiance {
+    bottom: 1.4vh;
+  }
+}
+
+/* Respect des préférences d'accessibilité */
+@media (prefers-reduced-motion: reduce) {
+  #tree-img, #tree-fallback {
+    animation: none;
+  }
+  .bg-layer, #tree-wrap, #ambiance {
+    transition-duration: 0.6s;
+  }
+}

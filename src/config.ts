@@ -4,7 +4,7 @@
  */
 export const CONFIG = {
   /** Jour zéro de l'arbre, au format AAAA-MM-JJ. */
-  DATE_DEBUT: "2024-01-01",
+  DATE_DEBUT: "2026-07-06",
 
   /** Nombre total d'étapes de croissance (une image par semaine). */
   TOTAL_ETAPES: 52,

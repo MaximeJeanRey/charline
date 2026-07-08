@@ -27,14 +27,15 @@ src/
     meteo.ts                moteur canvas des particules météo
   hooks/
     useHorloge.ts           date courante, rafraîchie périodiquement
+    useNavigationJours.ts   navigation dans les jours précédents (jamais au-delà d'aujourd'hui)
     useImageExiste.ts       vérifie si une image (PNG/JPG) est disponible
     useReduireMouvement.ts  respecte prefers-reduced-motion
   components/
-    Scene.tsx                assemble tout, aucune navigation
+    Scene.tsx                assemble tout
     FondSaison.tsx           fondu croisé entre deux fonds de saison
     Arbre.tsx                 vraie image ou secours généré
     CanevasMeteo.tsx          neige / pollen / lucioles / feuilles
-    Ambiance.tsx               phrase poétique + âge en jours
+    Ambiance.tsx               jour actuel + navigation jours précédents
   styles.css
 ```
 
@@ -45,7 +46,7 @@ Tout se règle dans [`src/config.ts`](src/config.ts) :
 ```ts
 export const CONFIG = {
   DATE_DEBUT: "2024-01-01",       // jour zéro de l'arbre
-  TOTAL_ETAPES: 52,               // une image par semaine
+  TOTAL_ETAPES: 446,              // une image par jour (adapte à ton nombre d'images)
   AFFICHER_AGE: true,             // afficher le message d'ambiance (jour + prochaine pousse)
 };
 ```
@@ -53,16 +54,17 @@ export const CONFIG = {
 ## Les illustrations de l'arbre
 
 Les illustrations aquarelle vivent dans `public/imgs/`, nommées par numéro
-de semaine : `1.png`, `2.png`, … jusqu'à `52.png` (l'arbre majestueux
-final). Il n'est pas nécessaire d'avoir les 52 : la liste des numéros
-réellement présents est déclarée dans `STAGES_IMAGES` (voir
-[`src/config.ts`](src/config.ts)), et chaque semaine affiche l'illustration
-disponible la plus proche. Pour affiner la croissance, ajoute simplement le
-PNG (`10.png`, `11.png`, …) et son numéro dans `STAGES_IMAGES`.
+de jour : `1.png`, `2.png`, … jusqu'à `TOTAL_ETAPES.png` (l'arbre
+majestueux final). Il n'est pas nécessaire d'avoir une image par jour : la
+liste des numéros réellement présents est déclarée dans `STAGES_IMAGES`
+(voir [`src/config.ts`](src/config.ts)), et chaque jour affiche
+l'illustration disponible la plus proche. Pour affiner la croissance,
+ajoute simplement le PNG (`70.png`, `100.png`, …) et son numéro dans
+`STAGES_IMAGES`.
 
 Le passage d'un stade au suivant se fait en **fondu enchaîné** : même un
-grand écart (par ex. de la semaine 9 à la 52) devient une lente
-dissolution plutôt qu'un à-coup. Les illustrations ayant un fond blanc,
+grand écart entre deux numéros disponibles devient une lente dissolution
+plutôt qu'un à-coup. Les illustrations ayant un fond blanc,
 celui-ci est **détouré à la volée** (voir `src/lib/detourage.ts`) : le
 blanc du papier devient transparent, si bien que l'arbre repose directement
 sur la scène et que la saison passe entre les feuilles. Le détourage se
@@ -80,31 +82,43 @@ dessiné à la volée en SVG (voir plus bas) — l'expérience reste complète.
 
 En l'absence d'images, un arbre aquarelle est généré en SVG : construit une
 seule fois (graine fixe) puis révélé progressivement — le même arbre dont
-les branches s'allongent semaine après semaine. Le dessin combine un lavis
+les branches s'allongent jour après jour. Le dessin combine un lavis
 aquarelle (taches floues, déformation SVG) et un trait d'encre croqué rendu
 avec [Rough.js](https://roughjs.com), comme dans un carnet de voyage.
 
-## Exporter les 52 stades en images
+## Exporter tous les stades en images
 
 ```bash
 npm run generer:arbres
 ```
 
-Écrit `apercu-arbres/tree-001.svg` → `tree-052.svg` (chaque semaine avec la
-saison correspondante, calée sur `DATE_DEBUT`) ainsi qu'une planche
-`apercu-arbres/planche.html` qui affiche toute l'année d'un seul regard.
-Le site n'a pas besoin de ces fichiers — il génère l'arbre en direct — la
-planche sert à contrôler visuellement l'ensemble de la croissance.
+Écrit `apercu-arbres/tree-001.svg` → `tree-TOTAL_ETAPES.svg` (chaque jour
+avec la saison correspondante, calée sur `DATE_DEBUT`) ainsi qu'une planche
+`apercu-arbres/planche.html` qui affiche toute la période d'un seul
+regard. Le site n'a pas besoin de ces fichiers — il génère l'arbre en
+direct — la planche sert à contrôler visuellement l'ensemble de la
+croissance.
+
+## Revoir les jours précédents
+
+Deux flèches discrètes de part et d'autre du jour actuel (ou les touches
+← →) permettent de feuilleter les jours déjà vécus par l'arbre : l'image
+et le fond de saison affichés correspondent alors à ce jour-là, pas à
+aujourd'hui. Impossible en revanche d'aller au-delà d'aujourd'hui — la
+flèche suivante reste désactivée tant qu'on n'a pas reculé — pour que la
+croissance à venir reste une surprise. Un lien "revenir à aujourd'hui"
+remplace le message de prochaine pousse pendant qu'on navigue dans le
+passé. Logique dans [`src/hooks/useNavigationJours.ts`](src/hooks/useNavigationJours.ts).
 
 ## Aperçu accéléré
 
 Ajoute `?apercu` à l'URL (ex. `http://localhost:5173/?apercu`) pour voir
-l'arbre grandir en continu — les 52 semaines et les 4 saisons défilent en
-boucle sur 52 secondes, au lieu d'une vraie année. Dans ce mode la
+l'arbre grandir en continu — tous les jours et les 4 saisons défilent en
+boucle sur 52 secondes, au lieu d'attendre en vrai. Dans ce mode la
 croissance est fluide (progression fractionnaire), là où l'expérience
-réelle avance par paliers d'une semaine. Volontairement caché derrière un
-paramètre d'URL plutôt qu'un bouton : l'expérience réelle ne doit avoir
-aucune navigation visible.
+réelle avance par paliers d'un jour. Volontairement caché derrière un
+paramètre d'URL plutôt qu'un bouton : c'est un outil de test, pas une
+fonctionnalité de l'expérience elle-même.
 
 ## Développer en local
 

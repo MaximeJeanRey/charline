@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { CONFIG } from "../config";
 
-/** 52 secondes pour représenter les 52 semaines (une par seconde). */
-const DUREE_SECONDES = 52;
-const JOURS_TOTAUX = CONFIG.TOTAL_ETAPES * 7;
+/** Durée de la boucle d'aperçu, quel que soit CONFIG.TOTAL_ETAPES. */
+export const DUREE_SECONDES = 52;
+const JOURS_TOTAUX = CONFIG.TOTAL_ETAPES;
 
 /**
  * Détecte le mode "aperçu accéléré" via `?apercu` dans l'URL.
@@ -18,7 +18,7 @@ export function useApercuAccelereActif(): boolean {
 }
 
 /**
- * Simule le passage des 52 semaines (et donc des 4 saisons) en boucle sur
+ * Simule le passage de tous les jours (et donc des 4 saisons) en boucle sur
  * DUREE_SECONDES, en réutilisant telles quelles les fonctions de calcul de
  * src/lib/temps.ts (elles ne voient qu'une Date, réelle ou simulée).
  */

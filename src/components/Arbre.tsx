@@ -17,7 +17,7 @@ interface Props {
  * DOSSIER_ARBRE (imgs/1.png ... imgs/52.png) si elles sont présentes,
  * sinon un arbre dessiné en SVG (secours).
  *
- * Chaque semaine choisit l'illustration disponible la plus proche, et le
+ * Chaque jour choisit l'illustration disponible la plus proche, et le
  * passage d'un stade au suivant se fait en fondu enchaîné (deux calques
  * d'images superposés) : même un grand saut de croissance devient une
  * lente dissolution plutôt qu'un à-coup.
@@ -79,7 +79,7 @@ export function Arbre({ etape, saison }: Props) {
   return (
     <div id="tree-wrap" className={visible ? "entree" : ""}>
       {illustrationsDisponibles === true ? (
-        <div id="tree-photo" role="img" aria-label={`l'arbre, semaine ${Math.round(etape)}`}>
+        <div id="tree-photo" role="img" aria-label={`l'arbre, jour ${Math.round(etape)}`}>
           <div className="tree-photo-layer" style={styleImg(calques[0], actif === 0)} />
           <div className="tree-photo-layer" style={styleImg(calques[1], actif === 1)} />
         </div>

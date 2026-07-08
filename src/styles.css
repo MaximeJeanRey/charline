@@ -213,6 +213,39 @@ body {
   opacity: 1;
 }
 
+#jour-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9em;
+  pointer-events: auto;
+}
+
+.fleche-jour {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0.3em 0.5em;
+  margin: 0;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(1.4rem, 4vw, 1.9rem);
+  line-height: 1;
+  color: var(--brun-doux);
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.3s ease;
+}
+
+.fleche-jour:hover:not(:disabled),
+.fleche-jour:focus-visible:not(:disabled) {
+  opacity: 0.9;
+}
+
+.fleche-jour:disabled {
+  opacity: 0.12;
+  cursor: default;
+}
+
 #jour-actuel {
   margin: 0;
   font-family: "Caveat", "Cormorant Garamond", cursive;
@@ -229,6 +262,29 @@ body {
   text-transform: uppercase;
   color: var(--brun-doux);
   opacity: 0.62;
+}
+
+#revenir-aujourdhui {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0.2em 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: clamp(0.62rem, 2vw, 0.78rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brun-doux);
+  opacity: 0.62;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: opacity 0.3s ease;
+}
+
+#revenir-aujourdhui:hover,
+#revenir-aujourdhui:focus-visible {
+  opacity: 1;
+  text-decoration: underline;
 }
 
 /* ---------- Petites tailles / mobile ---------- */

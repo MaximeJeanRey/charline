@@ -3,7 +3,7 @@
  * fractionnaire en aperçu accéléré), le numéro d'illustration disponible
  * le plus proche parmi `stagesDisponibles`.
  *
- * Ex. avec [1..9, 52] : semaine 7 -> 7, semaine 20 -> 9, semaine 40 -> 52.
+ * Ex. avec [7..63, 446] : jour 45 -> 42, jour 200 -> 63, jour 300 -> 446.
  * En cas d'égalité de distance, on garde le plus petit (l'arbre grandit
  * un peu plus tard plutôt qu'un peu plus tôt).
  */

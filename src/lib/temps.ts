@@ -12,10 +12,9 @@ export function joursEcoules(dateDebut: string, maintenant: Date): number {
   return Math.max(0, diff);
 }
 
-/** Étape de croissance actuelle (1 à totalEtapes), une par semaine écoulée. */
+/** Étape de croissance actuelle (1 à totalEtapes), une par jour écoulé. */
 export function etapeActuelle(jours: number, totalEtapes: number): number {
-  const semaine = Math.floor(jours / 7) + 1;
-  return Math.max(1, Math.min(totalEtapes, semaine));
+  return Math.max(1, Math.min(totalEtapes, jours + 1));
 }
 
 /** Jours écoulés en valeur continue (fractions de jour comprises). */
@@ -26,20 +25,21 @@ export function joursEcoulesContinus(dateDebut: string, maintenant: Date): numbe
 
 /**
  * Étape fractionnaire, pour l'aperçu accéléré : au lieu d'avancer par
- * paliers d'une semaine, l'arbre grandit continûment, comme une animation.
+ * paliers d'un jour, l'arbre grandit continûment, comme une animation.
  */
 export function etapeContinue(jours: number, totalEtapes: number): number {
-  return Math.min(totalEtapes, jours / 7);
+  return Math.min(totalEtapes, jours);
 }
 
 /**
- * Nombre de jours avant la prochaine pousse (le prochain palier hebdomadaire
- * de croissance). Renvoie `null` quand l'arbre a atteint son dernier stade :
- * il n'y a alors plus de pousse à venir.
+ * Nombre de jours avant la prochaine pousse (le prochain palier journalier
+ * de croissance — toujours 1, puisque l'étape avance chaque jour). Renvoie
+ * `null` quand l'arbre a atteint son dernier stade : il n'y a alors plus de
+ * pousse à venir.
  */
 export function joursAvantProchainePousse(jours: number, totalEtapes: number): number | null {
   if (etapeActuelle(jours, totalEtapes) >= totalEtapes) return null;
-  return 7 - (jours % 7);
+  return 1;
 }
 
 /** Saison météorologique (hémisphère nord) pour une date donnée. */

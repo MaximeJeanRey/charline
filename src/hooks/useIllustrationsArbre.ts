@@ -5,7 +5,7 @@ import { useImageExiste } from "./useImageExiste";
  * Vérifie UNE SEULE FOIS (via la première illustration disponible) si de
  * vraies images ont été déposées dans DOSSIER_ARBRE : soit elles y sont,
  * soit on bascule sur l'arbre dessiné. Refaire ce test à chaque changement
- * d'étape ferait clignoter l'arbre à chaque semaine (très visible en mode
+ * d'étape ferait clignoter l'arbre à chaque jour (très visible en mode
  * aperçu accéléré, où les étapes changent toutes les secondes).
  *
  * Retourne `null` tant que la vérification est en cours.

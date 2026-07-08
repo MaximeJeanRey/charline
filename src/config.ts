@@ -6,20 +6,24 @@ export const CONFIG = {
   /** Jour zéro de l'arbre, au format AAAA-MM-JJ. */
   DATE_DEBUT: "2026-07-06",
 
-  /** Nombre total d'étapes de croissance (une image par semaine). */
-  TOTAL_ETAPES: 52,
+  /** Nombre total d'étapes de croissance (une par jour, un peu plus de 14 mois). */
+  TOTAL_ETAPES: 446,
 
   /** Dossier contenant les illustrations de l'arbre (dans /public). */
   DOSSIER_ARBRE: "imgs",
 
   /**
-   * Numéros des semaines pour lesquelles une illustration existe, sous la
-   * forme <numéro>.png dans DOSSIER_ARBRE (ex. imgs/1.png, imgs/52.png).
-   * Chaque semaine sans image affiche l'illustration disponible la plus
-   * proche. Ajoute simplement d'autres numéros ici (et le PNG correspondant)
-   * pour affiner la croissance — 10, 11, ... jusqu'à 51.
+   * Numéros des jours pour lesquels une illustration existe, sous la
+   * forme <numéro>.png dans DOSSIER_ARBRE (ex. imgs/1.png, imgs/446.png).
+   * Chaque jour sans image affiche l'illustration disponible la plus
+   * proche.
+   *
+   * Générée pour couvrir les jours 1 à 446 en continu (une image par
+   * jour, tant que TOTAL_ETAPES reste à 446). Si certains jours n'ont
+   * en réalité pas d'image (trou dans la série), retire-les de la liste
+   * — sinon le site tentera de charger un fichier qui n'existe pas.
    */
-  STAGES_IMAGES: [1, 2, 3, 4, 5, 6, 7, 8, 9, 52],
+  STAGES_IMAGES: Array.from({ length: 446 }, (_, i) => i + 1),
 
   /** Dossier contenant winter.jpg, spring.jpg, summer.jpg, autumn.jpg (dans /public). */
   DOSSIER_FONDS: "assets/backgrounds",

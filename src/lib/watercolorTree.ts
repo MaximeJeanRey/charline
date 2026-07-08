@@ -9,7 +9,7 @@
  * pointes de feuillage) est construit une seule fois avec une graine fixe,
  * puis chaque étape n'en révèle qu'une partie — le tronc s'allonge d'abord,
  * les branches se déploient niveau par niveau, le feuillage éclot à la fin.
- * D'une semaine à l'autre, ce sont donc les MÊMES branches qui continuent
+ * D'un jour à l'autre, ce sont donc les MÊMES branches qui continuent
  * de pousser, au lieu d'un nouvel arbre aléatoire à chaque étape.
  */
 import rough from "roughjs";
@@ -204,7 +204,7 @@ export function genererArbreSVG(etape: number, totalEtapes: number, saison: Sais
 
   // Échelle globale : le jeune arbre est petit, l'adulte plein cadre.
   // Le minimum est volontairement assez haut pour que la toute jeune
-  // pousse soit déjà bien visible à l'écran dès les premières semaines.
+  // pousse soit déjà bien visible à l'écran dès les premiers jours.
   const s = 0.3 + 0.7 * easeCroissance(progress);
 
   // Deux passes pour le bois : un lavis plein (la masse aquarelle), puis
@@ -228,8 +228,8 @@ export function genererArbreSVG(etape: number, totalEtapes: number, saison: Sais
 
     lavisBranchesSVG += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${palette.ecorce}" stroke-width="${w.toFixed(1)}" stroke-linecap="round" opacity="0.6" />`;
 
-    // Graine fixe par segment : le tremblé du trait est stable d'une
-    // semaine à l'autre (pas de scintillement).
+    // Graine fixe par segment : le tremblé du trait est stable d'un
+    // jour à l'autre (pas de scintillement).
     const encre = roughGen.line(x1, y1, x2, y2, {
       seed: 100 + i,
       stroke: palette.ecorce,
@@ -246,7 +246,7 @@ export function genererArbreSVG(etape: number, totalEtapes: number, saison: Sais
   for (let i = 0; i < squelette.pointes.length; i++) {
     const pointe = squelette.pointes[i];
     // Un flux aléatoire indépendant par touffe : le dessin d'une touffe est
-    // identique d'une semaine à l'autre (pas de scintillement), et masquer
+    // identique d'un jour à l'autre (pas de scintillement), et masquer
     // les touffes non écloses ne décale pas les autres.
     const randTouffe = mulberry32(SEED_ARBRE + 1000 + i);
     if (randTouffe() > palette.densite) continue;

@@ -2,20 +2,37 @@ import { CONFIG } from "../config";
 import { joursAvantProchainePousse } from "../lib/temps";
 
 interface Props {
-  jours: number;
+  jour: number;
+  enHistorique: boolean;
+  peutReculer: boolean;
+  peutAvancer: boolean;
+  onReculer: () => void;
+  onAvancer: () => void;
+  onRevenirAujourdhui: () => void;
 }
 
 /**
  * Message d'ambiance discret, en bas de l'écran :
+ *   - une flèche de chaque côté du jour actuel, pour feuilleter les jours
+ *     précédents (jamais les suivants : le futur reste caché) ;
  *   - le jour actuel de l'arbre (en grand, manuscrit) ;
- *   - le nombre de jours avant la prochaine pousse (en petit, dessous).
+ *   - en dessous, le nombre de jours avant la prochaine pousse, ou — en
+ *     navigation dans l'historique — un lien pour revenir à aujourd'hui.
  */
-export function Ambiance({ jours }: Props) {
+export function Ambiance({
+  jour,
+  enHistorique,
+  peutReculer,
+  peutAvancer,
+  onReculer,
+  onAvancer,
+  onRevenirAujourdhui,
+}: Props) {
   if (!CONFIG.AFFICHER_AGE) return null;
 
-  const texteJour = jours <= 1 ? "premier jour" : `${jours}e jour`;
+  const texteJour = jour <= 1 ? "premier jour" : `${jour}e jour`;
 
-  const restant = joursAvantProchainePousse(jours, CONFIG.TOTAL_ETAPES);
+  const restant = joursAvantProchainePousse(jour, CONFIG.TOTAL_ETAPES);
   let textePousse: string;
   if (restant === null) {
     textePousse = "l'arbre a atteint sa pleine grandeur";
@@ -27,8 +44,34 @@ export function Ambiance({ jours }: Props) {
 
   return (
     <div id="ambiance" className="visible">
-      <p id="jour-actuel">{texteJour}</p>
-      <p id="prochaine-pousse">{textePousse}</p>
+      <div id="jour-nav">
+        <button
+          type="button"
+          className="fleche-jour"
+          onClick={onReculer}
+          disabled={!peutReculer}
+          aria-label="Voir le jour précédent"
+        >
+          ‹
+        </button>
+        <p id="jour-actuel">{texteJour}</p>
+        <button
+          type="button"
+          className="fleche-jour"
+          onClick={onAvancer}
+          disabled={!peutAvancer}
+          aria-label="Voir le jour suivant"
+        >
+          ›
+        </button>
+      </div>
+      {enHistorique ? (
+        <button type="button" id="revenir-aujourdhui" onClick={onRevenirAujourdhui}>
+          revenir à aujourd'hui
+        </button>
+      ) : (
+        <p id="prochaine-pousse">{textePousse}</p>
+      )}
     </div>
   );
 }

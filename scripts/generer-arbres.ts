@@ -1,7 +1,8 @@
 /**
- * Exporte les 52 stades de croissance de l'arbre en fichiers SVG, avec la
- * saison correspondant à chaque semaine (calée sur DATE_DEBUT), plus une
- * planche HTML (planche.html) pour tous les visualiser d'un coup.
+ * Exporte les stades de croissance de l'arbre en fichiers SVG (un par jour,
+ * cf. CONFIG.TOTAL_ETAPES), avec la saison correspondant à chaque jour
+ * (calée sur DATE_DEBUT), plus une planche HTML (planche.html) pour tous
+ * les visualiser d'un coup.
  *
  *   npm run generer:arbres
  *
@@ -25,13 +26,13 @@ const debut = new Date(CONFIG.DATE_DEBUT + "T00:00:00");
 let figures = "";
 
 for (let etape = 1; etape <= CONFIG.TOTAL_ETAPES; etape++) {
-  // Milieu de la semaine correspondante, pour déterminer sa saison.
-  const date = new Date(debut.getTime() + ((etape - 1) * 7 + 3) * MS_PAR_JOUR);
+  // Jour correspondant, pour déterminer sa saison.
+  const date = new Date(debut.getTime() + (etape - 1) * MS_PAR_JOUR);
   const saison = saisonActuelle(date);
   const svg = genererArbreSVG(etape, CONFIG.TOTAL_ETAPES, saison);
   const nom = `tree-${String(etape).padStart(3, "0")}.svg`;
   writeFileSync(join(DOSSIER, nom), svg, "utf8");
-  figures += `    <figure><img src="${nom}" alt="semaine ${etape}" loading="lazy"><figcaption>semaine ${etape} · ${saison}</figcaption></figure>\n`;
+  figures += `    <figure><img src="${nom}" alt="jour ${etape}" loading="lazy"><figcaption>jour ${etape} · ${saison}</figcaption></figure>\n`;
 }
 
 const planche = `<!DOCTYPE html>
@@ -39,7 +40,7 @@ const planche = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>l'arbre — les 52 semaines</title>
+<title>l'arbre — les ${CONFIG.TOTAL_ETAPES} jours</title>
 <style>
   body {
     margin: 0;
@@ -82,7 +83,7 @@ const planche = `<!DOCTYPE html>
 </style>
 </head>
 <body>
-  <h1>l'arbre, semaine après semaine</h1>
+  <h1>l'arbre, jour après jour</h1>
   <main>
 ${figures}  </main>
 </body>

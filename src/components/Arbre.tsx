@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { CONFIG } from "../config";
 import type { Saison } from "../types";
 import { useIllustrationsArbreDisponibles } from "../hooks/useIllustrationsArbre";
@@ -13,6 +13,9 @@ interface Props {
 
 /** Un peu plus que la durée de la transition CSS (2.4s) sur .tree-photo-layer. */
 const DUREE_FONDU_MS = 2600;
+
+const ZOOM_MAX = 4;
+const ZOOM_DOUBLE_TAP = 2.2;
 
 /**
  * Affiche l'arbre : les illustrations aquarelle déposées dans
@@ -30,8 +33,10 @@ const DUREE_FONDU_MS = 2600;
  *
  * Les photos sont calées en hauteur sur l'écran (plein format portrait) :
  * leur largeur suit leur ratio d'origine et peut dépasser l'écran — on
- * glisse alors horizontalement pour en voir le reste. Chaque nouvelle
- * photo s'ouvre recentrée.
+ * glisse alors horizontalement pour en voir le reste. On peut aussi
+ * pincer à deux doigts pour zoomer (le point pincé reste stable à
+ * l'écran), ou double-tapoter pour zoomer/revenir d'un coup. Chaque
+ * nouvelle photo s'ouvre recentrée et dézoomée.
  *
  * Les illustrations ont un fond blanc : `mix-blend-mode: multiply` (en CSS)
  * fait fondre ce blanc dans le papier, si bien que la teinte de la saison
@@ -72,12 +77,19 @@ export function Arbre({ etape, saison }: Props) {
     return () => clearTimeout(t);
   }, [couches]);
 
-  // Recentre le défilement horizontal à chaque nouvelle photo, une fois
-  // chargée (pour connaître sa largeur réelle une fois son ratio connu).
   const scrollRef = useRef<HTMLDivElement>(null);
-  function recentrer() {
+  const { zoom, resetZoom } = usePinchZoom(scrollRef);
+
+  // À chaque nouvelle photo (une fois chargée, pour connaître ses
+  // dimensions réelles) : dézoome et recentre horizontalement.
+  function onImageChargee(e: React.SyntheticEvent<HTMLImageElement>) {
     const el = scrollRef.current;
-    if (el) el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
+    const img = e.currentTarget;
+    if (!el || !img.naturalWidth || !img.naturalHeight) return;
+    resetZoom();
+    const largeur = img.naturalWidth * (el.clientHeight / img.naturalHeight);
+    el.scrollLeft = (largeur - el.clientWidth) / 2;
+    el.scrollTop = 0;
   }
 
   // Fondu d'apparition global, une fois qu'on sait quoi afficher.
@@ -103,7 +115,8 @@ export function Arbre({ etape, saison }: Props) {
                 url={url}
                 active={i === couches.length - 1}
                 zIndex={i}
-                onLoad={recentrer}
+                zoom={zoom}
+                onLoad={onImageChargee}
               />
             ))}
           </div>
@@ -119,18 +132,22 @@ export function Arbre({ etape, saison }: Props) {
  * Un calque de la pile. Monte à opacité 0 puis passe à 1 une frame plus
  * tard (sinon le navigateur peint directement l'état final sans jouer la
  * transition CSS — un nœud DOM tout juste créé n'a rien à transitionner
- * *depuis*).
+ * *depuis*). La hauteur suit le niveau de zoom ; la largeur (auto) suit
+ * le ratio d'origine de l'image, d'où le débordement horizontal (et
+ * vertical, une fois zoomé) qu'on parcourt par glissement.
  */
 function CoucheArbre({
   url,
   active,
   zIndex,
+  zoom,
   onLoad,
 }: {
   url: string;
   active: boolean;
   zIndex: number;
-  onLoad: () => void;
+  zoom: number;
+  onLoad: (e: React.SyntheticEvent<HTMLImageElement>) => void;
 }) {
   const [prete, setPrete] = useState(false);
 
@@ -144,8 +161,118 @@ function CoucheArbre({
       src={url}
       alt=""
       className="tree-photo-layer"
-      style={{ opacity: prete && active ? 1 : 0, zIndex }}
+      style={{ opacity: prete && active ? 1 : 0, zIndex, height: `${zoom * 100}%` }}
       onLoad={onLoad}
     />
   );
+}
+
+/**
+ * Pincement à deux doigts pour zoomer (le point pincé reste stable à
+ * l'écran), double-tap pour zoomer/revenir. Le déplacement une fois
+ * zoomé passe par le défilement natif du conteneur (un seul doigt) :
+ * cette fonction ne fait qu'ajuster le zoom et compenser le défilement
+ * en conséquence, elle ne gère aucun geste à un seul doigt.
+ */
+function usePinchZoom(ref: RefObject<HTMLDivElement | null>) {
+  const [zoom, setZoom] = useState(1);
+  const zoomRef = useRef(1);
+  const pincement = useRef<{ distance: number } | null>(null);
+  const debutTap = useRef<{ x: number; y: number; temps: number } | null>(null);
+  const dernierTap = useRef(0);
+
+  const resetZoom = useCallback(() => {
+    zoomRef.current = 1;
+    setZoom(1);
+  }, []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    function appliquerZoom(nouveau: number, centreXPage: number, centreYPage: number) {
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const centreX = centreXPage - rect.left;
+      const centreY = centreYPage - rect.top;
+      const facteur = nouveau / zoomRef.current;
+      el.scrollLeft = (el.scrollLeft + centreX) * facteur - centreX;
+      el.scrollTop = (el.scrollTop + centreY) * facteur - centreY;
+      zoomRef.current = nouveau;
+      setZoom(nouveau);
+    }
+
+    function distanceEntre(t: TouchList) {
+      const dx = t[0].clientX - t[1].clientX;
+      const dy = t[0].clientY - t[1].clientY;
+      return Math.hypot(dx, dy);
+    }
+
+    function onTouchStart(e: TouchEvent) {
+      if (e.touches.length === 2) {
+        pincement.current = { distance: distanceEntre(e.touches) };
+        debutTap.current = null;
+      } else if (e.touches.length === 1) {
+        const t = e.touches[0];
+        debutTap.current = { x: t.clientX, y: t.clientY, temps: Date.now() };
+      }
+    }
+
+    function onTouchMove(e: TouchEvent) {
+      if (e.touches.length !== 2 || !pincement.current) return;
+      e.preventDefault(); // on gère ce geste nous-mêmes, pas le navigateur
+      const distance = distanceEntre(e.touches);
+      const ratio = distance / pincement.current.distance;
+      pincement.current.distance = distance;
+      const nouveau = Math.min(ZOOM_MAX, Math.max(1, zoomRef.current * ratio));
+      if (nouveau === zoomRef.current) return;
+      const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      appliquerZoom(nouveau, cx, cy);
+    }
+
+    function onTouchEnd(e: TouchEvent) {
+      if (e.touches.length < 2) pincement.current = null;
+      if (e.touches.length > 0 || !debutTap.current) return;
+
+      const { x, y, temps } = debutTap.current;
+      debutTap.current = null;
+      const t = e.changedTouches[0];
+      if (!t) return;
+
+      // Un tap, pas un glissement : doigt resté quasi immobile, geste bref.
+      const bouge = Math.hypot(t.clientX - x, t.clientY - y) > 12;
+      if (bouge || Date.now() - temps > 400) {
+        dernierTap.current = 0;
+        return;
+      }
+
+      const maintenant = Date.now();
+      if (maintenant - dernierTap.current < 300) {
+        if (zoomRef.current > 1.05) resetZoom();
+        else appliquerZoom(ZOOM_DOUBLE_TAP, t.clientX, t.clientY);
+        dernierTap.current = 0;
+      } else {
+        dernierTap.current = maintenant;
+      }
+    }
+
+    function onTouchCancel() {
+      pincement.current = null;
+      debutTap.current = null;
+    }
+
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd, { passive: true });
+    el.addEventListener("touchcancel", onTouchCancel, { passive: true });
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("touchcancel", onTouchCancel);
+    };
+  }, [ref, resetZoom]);
+
+  return { zoom, resetZoom };
 }

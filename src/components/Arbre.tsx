@@ -161,7 +161,7 @@ function CoucheArbre({
       src={url}
       alt=""
       className="tree-photo-layer"
-      style={{ opacity: prete && active ? 1 : 0, zIndex, height: `${zoom * 100}%` }}
+      style={{  opacity: prete && active ? 1 : 0,  zIndex,  transform: `scale(${zoom})`,  transformOrigin: "center center"}}
       onLoad={onLoad}
     />
   );
